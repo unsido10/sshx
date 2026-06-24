@@ -15,4 +15,4 @@ WORKDIR /ratko
 RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
 
 # 5. При запуске контейнера стартует веб-сервер и sshx, а бот уже готов к работе
-CMD sh -c "python3 -m http.server $PORT & sshx; echo 'Терминал упал, завершаем контейнер...'; exit 1"
+CMD sh -c "python3 -m http.server $PORT & while true; do sshx; sleep 5; done"
