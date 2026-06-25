@@ -1,14 +1,20 @@
 FROM alpine:latest
 
-# Устанавливаем системные пакеты, включая tmate
-RUN apk add --no-cache curl bash python3 python3-dev linux-headers git build-base imagemagick py3-pip tmate
+# 1. Устанавливаем системные пакеты
+RUN apk add --no-cache curl bash python3 python3-dev linux-headers git build-base imagemagick py3-pip
 
-# Клонируем бота
+# 2. Создаем глобальный конфиг для pip, чтобы разрешить установку пакетов внутри скриптов бота (PEP 668 bypass)
+RUN mkdir -p /root/.config/pip && echo -e "[global]\nbreak-system-packages = true" > /root/.config/pip/pip.conf
+
+# 3. Скачиваем sshx
+RUN curl -sSf https://sshx.io/get | sh
+
+# 4. Клонируем бота
 RUN git clone https://github.com/unsidogandon/ratko /ratko
 
-# Ставим зависимости в систему
+# 5. Ставим зависимости в систему
 WORKDIR /ratko
-RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Запускаем веб-сервер для крон-жоба и tmate в бесконечном цикле
-CMD sh -c "python3 -m http.server $PORT & while true; do tmate -F; sleep 5; done"
+# 6. Запускаем веб-сервер и терминал в бесконечном цикле
+CMD sh -c "python3 -m http.server $PORT & while true; do sshx; sleep 5; done"
